@@ -1,6 +1,11 @@
 Bounty Beacon
 =============
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Go version](https://img.shields.io/badge/go-1.25+-00ADD8?logo=go)](go.mod)
+[![CI](https://github.com/gregarendse/BountyBeacon/actions/workflows/ci.yaml/badge.svg)](https://github.com/gregarendse/BountyBeacon/actions/workflows/ci.yaml)
+[![Docker Hub](https://img.shields.io/docker/v/gregarendse/bountybeacon?logo=docker&label=Docker+Hub)](https://hub.docker.com/r/gregarendse/bountybeacon)
+
 A CLI tool to monitor and claim rewards from the Octopus Energy Octoplus partner program.
 
 ## Project Layout
@@ -37,8 +42,8 @@ Implemented a Cobra/Viper-based Go CLI with the following commands:
 ## Usage
 
 ```bash
-export OCTOPUS_REFRESH_TOKEN="your_refresh_token_here"
-export OCTOPUS_CLIENT_ID="your_octopus_oauth_client_id"
+cp .env.example .env        # fill in OCTOPUS_REFRESH_TOKEN and OCTOPUS_CLIENT_ID
+export $(grep -v '^#' .env | xargs)
 go run . login
 go run . check --offer=caffe-nero
 go run . watch --offer=caffe-nero --interval=10s --auto-claim
@@ -83,6 +88,24 @@ kubectl apply -f k8s/cronjob.yaml
 ```
 
 If you want a different time, update `spec.schedule` in `k8s/cronjob.yaml`.
+
+## Contributing
+
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR.
+
+## Security
+
+Please report vulnerabilities privately — see [SECURITY.md](SECURITY.md) for details.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for a history of notable changes.
+
+## Licence
+
+This project is licensed under the [MIT Licence](LICENSE).
+
+---
 
 # References
 
