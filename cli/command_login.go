@@ -14,13 +14,9 @@ func loginCommand() *cobra.Command {
 		Use:   "login",
 		Short: "Log in using OCTOPUS_REFRESH_TOKEN and OCTOPUS_CLIENT_ID, then save session config",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			token := strings.TrimSpace(viper.GetString("octopus_refresh_token"))
-			if token == "" {
-				return fmt.Errorf("OCTOPUS_REFRESH_TOKEN environment variable is not set\nUsage: OCTOPUS_REFRESH_TOKEN=... OCTOPUS_CLIENT_ID=... octopus-cli login")
-			}
-			clientID := strings.TrimSpace(viper.GetString("octopus_client_id"))
-			if clientID == "" {
-				return fmt.Errorf("OCTOPUS_CLIENT_ID environment variable is not set\nUsage: OCTOPUS_REFRESH_TOKEN=... OCTOPUS_CLIENT_ID=... octopus-cli login")
+			token, clientID, err := readLoginCredentials()
+			if err != nil {
+				return err
 			}
 
 			client, err := libclient.Login(cmd.Context(), token, clientID)
@@ -33,3 +29,17 @@ func loginCommand() *cobra.Command {
 		},
 	}
 }
+
+func readLoginCredentials() (string, string, error) {
+	token := strings.TrimSpace(viper.GetString("octopus_refresh_token"))
+	if token == "" {
+		return "", "", fmt.Errorf("OCTOPUS_REFRESH_TOKEN environment variable is not set\nUsage: OCTOPUS_REFRESH_TOKEN=... OCTOPUS_CLIENT_ID=... octopus-cli login")
+	}
+	clientID := strings.TrimSpace(viper.GetString("octopus_client_id"))
+	if clientID == "" {
+		return "", "", fmt.Errorf("OCTOPUS_CLIENT_ID environment variable is not set\nUsage: OCTOPUS_REFRESH_TOKEN=... OCTOPUS_CLIENT_ID=... octopus-cli login")
+	}
+
+	return token, clientID, nil
+}
+

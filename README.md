@@ -34,6 +34,7 @@ Analyzed the Octopus GraphQL schema to identify key operations:
 
 ### 3. Go CLI Implementation
 Implemented a Cobra/Viper-based Go CLI with the following commands:
+- `bootstrap-login`: Uses saved config when valid, otherwise performs env-based login and persists fresh session data.
 - `rewards`: Lists all currently held vouchers and their expiry dates.
 - `check`: Checks if the Caffè Nero offer is in stock or available to claim.
 - `claim`: Attempts to claim the configured offer.
@@ -68,10 +69,14 @@ go run . claim
 This repo includes:
 
 - `Dockerfile` using a `FROM scratch` runtime image
+- `k8s/namespace.yaml` for a dedicated `bountybeacon` namespace
 - `k8s/cronjob.yaml` scheduled for Monday 03:00 (`Europe/London`)
 - `k8s/secret.example.yaml` for the refresh token secret
+- `k8s/pvc.example.yaml` for persistent `/work` storage (`~/.bountybeacon.json`)
 
-The cron job runs an init container for `login`, then the main container runs `watch --auto-claim`.
+The cron job runs an init container for `bootstrap-login`, then the main container runs `watch --auto-claim`.
+
+Only the init container references `octopus-credentials` env vars. The main container reads the persisted session file from `/work/.bountybeacon.json`.
 
 Build and push:
 
@@ -80,12 +85,16 @@ docker build -t gregarendse/bountybeacon:latest .
 docker push gregarendse/bountybeacon:latest
 ```
 
-Create secret and apply CronJob:
+Create namespace, secret, PVC, and apply CronJob:
 
 ```bash
+kubectl apply -f k8s/namespace.yaml
 kubectl apply -f k8s/secret.example.yaml
+kubectl apply -f k8s/pvc.example.yaml
 kubectl apply -f k8s/cronjob.yaml
 ```
+
+All Kubernetes manifests in `k8s/` are scoped to the `bountybeacon` namespace.
 
 If you want a different time, update `spec.schedule` in `k8s/cronjob.yaml`.
 
