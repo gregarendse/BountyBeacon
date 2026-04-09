@@ -38,6 +38,7 @@ go.work.sum
 # local Kubernetes secret manifests
 k8s/secret.yaml
 k8s/secret-*.yaml
+k8s/.secret.yaml
 !k8s/secret.example.yaml
 
 # IDE / OS files

@@ -57,11 +57,25 @@ func handleWatch(ctx context.Context, client *libclient.Client) error {
 		}
 
 		if err := client.EnsureFreshToken(ctx, 5*time.Minute); err != nil {
-			logWarn("token refresh failed", "offer", offerSlug, "error", err)
-			if err := waitForNextPoll(ctx, ticks); err != nil {
-				return err
+			logWarn("token refresh failed, attempting API key re-login", "offer", offerSlug, "error", err)
+			apiKey, credErr := readAPIKey()
+			if credErr != nil {
+				logWarn("no API key available for re-login", "offer", offerSlug, "error", credErr)
+				if err := waitForNextPoll(ctx, ticks); err != nil {
+					return err
+				}
+				continue
 			}
-			continue
+			newClient, loginErr := libclient.LoginWithAPIKey(ctx, apiKey)
+			if loginErr != nil {
+				logWarn("API key re-login failed", "offer", offerSlug, "error", loginErr)
+				if err := waitForNextPoll(ctx, ticks); err != nil {
+					return err
+				}
+				continue
+			}
+			*client = *newClient
+			logInfo("API key re-login successful", "offer", offerSlug, "account", client.AccountID)
 		}
 
 		checkResult, err := client.FetchOfferBySlug(ctx, offerSlug)

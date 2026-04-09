@@ -29,12 +29,17 @@ This project, **BountyBeacon**, is a Go-based CLI tool designed to monitor and c
   Available commands: `login`, `rewards`, `check`, `claim`, `watch`.
 
 - **Authentication**:
-  1. Set your refresh token:
+  1. Set your API key (preferred — uses `obtainKrakenToken` GraphQL mutation, no captcha required):
+     ```bash
+     export OCTOPUS_API_KEY="your_api_key"
+     ```
+     Get your API key from: https://octopus.energy/dashboard/new/accounts/personal-details/api-access
+  2. Or set your refresh token (legacy — tokens expire after ~2 weeks):
      ```bash
      export OCTOPUS_REFRESH_TOKEN="your_refresh_token"
      export OCTOPUS_CLIENT_ID="your_octopus_oauth_client_id"
      ```
-  2. Perform initial login to save configuration:
+  3. Perform initial login to save configuration:
      ```bash
      go run . login
      ```
@@ -73,6 +78,6 @@ This project, **BountyBeacon**, is a Go-based CLI tool designed to monitor and c
 - **Headers**: API requests include `Authorization` (raw token string), `Origin`, and `Referer` for parity with observed browser calls.
 - **Configuration**: Session details are stored in `~/.bountybeacon.json`.
 - **CLI Config (Viper)**:
-    - Env vars: `OCTOPUS_REFRESH_TOKEN`, `OCTOPUS_CLIENT_ID`, `CLAIM_POLL_INTERVAL`, `CLAIM_POLL_TIMEOUT`, `LOG_LEVEL`, `LOG_FORMAT`
+    - Env vars: `OCTOPUS_API_KEY`, `OCTOPUS_REFRESH_TOKEN`, `OCTOPUS_CLIENT_ID`, `CLAIM_POLL_INTERVAL`, `CLAIM_POLL_TIMEOUT`, `LOG_LEVEL`, `LOG_FORMAT`
     - Flags: `--offer`, `--interval`, `--auto-claim`, `--claim-poll-interval`, `--claim-timeout`, `--log-level`, `--log-format`
 - **Security**: Never commit `~/.bountybeacon.json` or unsanitized HAR files. Use `sanitize_har.sh` before sharing or processing HAR data.

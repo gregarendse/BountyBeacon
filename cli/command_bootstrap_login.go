@@ -11,7 +11,7 @@ import (
 func bootstrapLoginCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "bootstrap-login",
-		Short: "Use saved session when valid, otherwise log in from OCTOPUS_REFRESH_TOKEN and OCTOPUS_CLIENT_ID",
+		Short: "Use saved session when valid, otherwise log in from env credentials",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			client, err := libclient.LoadConfig()
 			if err == nil {
@@ -22,17 +22,29 @@ func bootstrapLoginCommand() *cobra.Command {
 				logWarn("existing session invalid, attempting env bootstrap", "error", err)
 			}
 
-			token, clientID, err := readLoginCredentials()
-			if err != nil {
-				return err
+			// Try refresh-token login
+			token, clientID, credErr := readLoginCredentials()
+			if credErr == nil {
+				client, err = libclient.Login(cmd.Context(), token, clientID)
+				if err == nil {
+					logInfo("bootstrap login successful (refresh token)", "account", client.AccountID)
+					return nil
+				}
+				logWarn("refresh token login failed, trying API key", "error", err)
 			}
 
-			client, err = libclient.Login(cmd.Context(), token, clientID)
+			// Fall back to API key
+			apiKey, credErr := readAPIKey()
+			if credErr != nil {
+				return fmt.Errorf("bootstrap login failed: no valid credentials available")
+			}
+
+			client, err = libclient.LoginWithAPIKey(cmd.Context(), apiKey)
 			if err != nil {
 				return fmt.Errorf("bootstrap login failed: %w", err)
 			}
 
-			logInfo("bootstrap login successful", "account", client.AccountID)
+			logInfo("bootstrap login successful (API key)", "account", client.AccountID)
 			return nil
 		},
 	}

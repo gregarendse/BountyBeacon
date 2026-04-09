@@ -78,6 +78,8 @@ The cron job runs an init container for `bootstrap-login`, then the main contain
 
 Only the init container references `octopus-credentials` env vars. The main container reads the persisted session file from `/work/.bountybeacon.json`.
 
+The pod sets `fsGroup: 65532` so the non-root containers can write to the mounted PVC at `/work`. If you previously bootstrapped with different ownership and still see `permission denied` for `/work/.bountybeacon.json`, remove the old file from the PVC once and rerun the job.
+
 Build and push:
 
 ```bash

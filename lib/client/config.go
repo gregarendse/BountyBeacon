@@ -25,20 +25,24 @@ func LoadConfig() (*Client, error) {
 	return &client, nil
 }
 
-func LoadOrBootstrapConfig(ctx context.Context, refreshToken, clientID string) (*Client, error) {
+func LoadOrBootstrapConfig(ctx context.Context, refreshToken, clientID, apiKey string) (*Client, error) {
 	client, err := LoadConfig()
 	if err == nil {
 		return client, nil
 	}
 
-	if refreshToken == "" {
-		return nil, fmt.Errorf("config not found and OCTOPUS_REFRESH_TOKEN is not set")
-	}
-	if clientID == "" {
-		return nil, fmt.Errorf("config not found and OCTOPUS_CLIENT_ID is not set")
+	if refreshToken != "" && clientID != "" {
+		client, err = Login(ctx, refreshToken, clientID)
+		if err == nil {
+			return client, nil
+		}
 	}
 
-	return Login(ctx, refreshToken, clientID)
+	if apiKey != "" {
+		return LoginWithAPIKey(ctx, apiKey)
+	}
+
+	return nil, fmt.Errorf("config not found and no valid credentials available (set OCTOPUS_API_KEY, or OCTOPUS_REFRESH_TOKEN + OCTOPUS_CLIENT_ID)")
 }
 
 func (client *Client) SaveConfig() error {

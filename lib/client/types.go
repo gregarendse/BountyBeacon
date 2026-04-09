@@ -28,3 +28,7 @@ type OctoplusRewardsByIDVariables = operations.OctoplusRewardsByIDVariables
 
 type ClaimAbility = operations.ClaimAbility
 type FlexibleInt = operations.FlexibleInt
+
+type ObtainKrakenTokenVariables = operations.ObtainKrakenTokenVariables
+type ObtainKrakenTokenData = operations.ObtainKrakenTokenData
+
